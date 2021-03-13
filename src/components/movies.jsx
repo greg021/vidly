@@ -45,17 +45,22 @@ function Movies() {
     setSortColumn(sc);
   };
 
+  const getPagedData = () => {
+    const filtered =
+      selectedGenre && selectedGenre._id
+        ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
+        : allMovies;
+    const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
+    const movies = paginate(sorted, currentPage, pageSize);
+
+    return { totalCount: filtered.length, data: movies };
+  };
+
+  const { totalCount, data: movies } = getPagedData();
+
   if (allMovies.length === 0) {
     return <p>There are no movies in the Database.</p>;
   }
-
-  const filtered =
-    selectedGenre && selectedGenre._id
-      ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
-      : allMovies;
-  const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
-  const movies = paginate(sorted, currentPage, pageSize);
-
   return (
     <div className="row mt-4">
       <div className="col-2">
@@ -66,7 +71,7 @@ function Movies() {
         />
       </div>
       <div className="col">
-        <p>Showing {filtered.length} movies in the Database</p>
+        <p>Showing {totalCount} movies in the Database</p>
         <MoviesTable
           movies={movies}
           sortColumn={sortColumn}
@@ -75,7 +80,7 @@ function Movies() {
           onSort={handleSort}
         />
         <Pagination
-          itemsCount={filtered.length}
+          itemsCount={totalCount}
           pageSize={pageSize}
           currentPage={currentPage}
           onChangePage={(page) => handleChangePage(page)}
